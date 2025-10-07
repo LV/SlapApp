@@ -72,8 +72,10 @@ struct LoginView: View {
                     .cornerRadius(8)
                     .padding(.horizontal, 40)
                     .padding(.top, 60)
+                    .transition(.opacity)
             }
         }
+        .animation(.easeInOut, value: errorMessage)
     }
 
     func handleSignInWithApple(_ result: Result<ASAuthorization, Error>) {
@@ -107,12 +109,26 @@ struct LoginView: View {
                         await MainActor.run {
                             errorMessage = "Authentication failed: \(error.localizedDescription)"
                         }
+
+                        // Clear error after 3 seconds
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        await MainActor.run {
+                            errorMessage = nil
+                        }
                     }
                 }
             }
         case .failure(let error):
             print("Sign in with Apple failed: \(error.localizedDescription)")
             errorMessage = "Sign in failed: \(error.localizedDescription)"
+
+            // Clear error after 3 seconds
+            Task {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                await MainActor.run {
+                    errorMessage = nil
+                }
+            }
         }
     }
 }
