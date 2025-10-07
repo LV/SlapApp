@@ -1,0 +1,132 @@
+//
+//  LoginView.swift
+//  SlapApp
+//
+//  Created by Luis Victoria on 10/6/25.
+//
+
+import SwiftUI
+import AuthenticationServices
+
+struct LoginView: View {
+    @AppStorage("isLoggedIn") private var isLoggedIn = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        VStack(spacing: 40) {
+            Spacer()
+
+            VStack(spacing: 20) {
+                Text("👋")
+                    .font(.system(size: 100))
+
+                Text("SlapApp")
+                    .font(.system(size: 48, weight: .bold))
+                    .foregroundColor(.white)
+            }
+
+            Spacer()
+
+            SignInWithAppleButton(
+                .signIn,
+                onRequest: { request in
+                    request.requestedScopes = [.fullName, .email]
+                },
+                onCompletion: { result in
+                    handleSignInWithApple(result)
+                }
+            )
+            .frame(height: 50)
+            .padding(.horizontal, 40)
+            .signInWithAppleButtonStyle(.white)
+
+            Spacer()
+        }
+        .padding()
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [Color.orange.opacity(0.6), Color.red.opacity(0.75)]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .ignoresSafeArea()
+        .overlay(alignment: .top) {
+            if let errorMessage = errorMessage {
+                HStack(spacing: 12) {
+                    Text("⚠️")
+                        .font(.title2)
+
+                    Text(errorMessage)
+                        .font(.subheadline)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.red.opacity(0.9))
+                        .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 60)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: errorMessage)
+    }
+
+    func handleSignInWithApple(_ result: Result<ASAuthorization, Error>) {
+        switch result {
+        case .success(let authorization):
+            if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+                guard let identityToken = appleIDCredential.identityToken,
+                      let tokenString = String(data: identityToken, encoding: .utf8) else {
+                    errorMessage = "Failed to get identity token"
+                    return
+                }
+
+                Task {
+                    do {
+                        // Sign in with Supabase using Apple ID token
+                        let session = try await Config.supabase.auth.signInWithIdToken(
+                            credentials: .init(
+                                provider: .apple,
+                                idToken: tokenString
+                            )
+                        )
+
+                        print("Successfully signed in! User ID: \(session.user.id)")
+
+                        // Update login state on main thread
+                        await MainActor.run {
+                            isLoggedIn = true
+                        }
+                    } catch {
+                        print("Supabase auth error: \(error)")
+                        await MainActor.run {
+                            errorMessage = "Authentication failed: \(error.localizedDescription)"
+                        }
+
+                        // Clear error after 3 seconds
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        await MainActor.run {
+                            errorMessage = nil
+                        }
+                    }
+                }
+            }
+        case .failure(let error):
+            print("Sign in with Apple failed: \(error.localizedDescription)")
+            errorMessage = "Sign in failed: \(error.localizedDescription)"
+
+            // Clear error after 3 seconds
+            Task {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                await MainActor.run {
+                    errorMessage = nil
+                }
+            }
+        }
+    }
+}
