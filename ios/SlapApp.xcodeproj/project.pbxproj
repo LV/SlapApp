@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F5BBBA802E94C2F200A491EB /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F5BBBA7F2E94C2F200A491EB /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		F58038EF2E94851500C4182C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F5BBBA802E94C2F200A491EB /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +96,7 @@
 				F58038E02E94851300C4182C /* SlapApp */,
 				F58038F12E94851500C4182C /* SlapAppTests */,
 				F58038FB2E94851500C4182C /* SlapAppUITests */,
+				F5BBBA7E2E94C2F200A491EB /* Frameworks */,
 				F58038DF2E94851300C4182C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -103,6 +109,13 @@
 				F58038F82E94851500C4182C /* SlapAppUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F5BBBA7E2E94C2F200A491EB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -125,6 +138,7 @@
 			);
 			name = SlapApp;
 			packageProductDependencies = (
+				F5BBBA7F2E94C2F200A491EB /* Supabase */,
 			);
 			productName = SlapApp;
 			productReference = F58038DE2E94851300C4182C /* SlapApp.app */;
@@ -607,6 +621,14 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F5BBBA7F2E94C2F200A491EB /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F5BBBA792E94BE3D00A491EB /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F58038D62E94851300C4182C /* Project object */;
 }

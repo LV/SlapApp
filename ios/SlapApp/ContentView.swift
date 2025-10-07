@@ -22,6 +22,7 @@ struct ContentView: View {
 
 struct LoginView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn = false
+    @State private var errorMessage: String?
 
     var body: some View {
         VStack(spacing: 40) {
@@ -51,6 +52,15 @@ struct LoginView: View {
             .padding(.horizontal, 40)
             .signInWithAppleButtonStyle(.white)
 
+            if let errorMessage = errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.red.opacity(0.8))
+                    .cornerRadius(8)
+                    .padding(.horizontal, 40)
+            }
+
             Spacer()
         }
         .padding()
@@ -68,20 +78,39 @@ struct LoginView: View {
         switch result {
         case .success(let authorization):
             if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
-                let userIdentifier = appleIDCredential.user
-                let fullName = appleIDCredential.fullName
-                let email = appleIDCredential.email
+                guard let identityToken = appleIDCredential.identityToken,
+                      let tokenString = String(data: identityToken, encoding: .utf8) else {
+                    errorMessage = "Failed to get identity token"
+                    return
+                }
 
-                // TODO: Send to Supabase for authentication
-                print("User ID: \(userIdentifier)")
-                print("Full Name: \(fullName?.givenName ?? "") \(fullName?.familyName ?? "")")
-                print("Email: \(email ?? "N/A")")
+                Task {
+                    do {
+                        // Sign in with Supabase using Apple ID token
+                        let session = try await Config.supabase.auth.signInWithIdToken(
+                            credentials: .init(
+                                provider: .apple,
+                                idToken: tokenString
+                            )
+                        )
 
-                // Just login for now
-                isLoggedIn = true
+                        print("Successfully signed in! User ID: \(session.user.id)")
+
+                        // Update login state on main thread
+                        await MainActor.run {
+                            isLoggedIn = true
+                        }
+                    } catch {
+                        print("Supabase auth error: \(error)")
+                        await MainActor.run {
+                            errorMessage = "Authentication failed: \(error.localizedDescription)"
+                        }
+                    }
+                }
             }
         case .failure(let error):
             print("Sign in with Apple failed: \(error.localizedDescription)")
+            errorMessage = "Sign in failed: \(error.localizedDescription)"
         }
     }
 }
@@ -104,7 +133,16 @@ struct HomeView: View {
             Spacer()
 
             Button(action: {
-                isLoggedIn = false
+                Task {
+                    do {
+                        try await Config.supabase.auth.signOut()
+                        await MainActor.run {
+                            isLoggedIn = false
+                        }
+                    } catch {
+                        print("Sign out error: \(error)")
+                    }
+                }
             }) {
                 Text("Logout")
                     .foregroundColor(.red)
