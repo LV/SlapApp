@@ -62,5 +62,11 @@ struct HomeView: View {
             .padding()
         }
         .padding()
+        .task {
+            // Fetch profile if not already loaded
+            if profileManager.profile == nil {
+                await profileManager.fetchProfile()
+            }
+        }
     }
 }
