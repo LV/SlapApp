@@ -28,7 +28,6 @@ struct LoginView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Top section - Icon and Title
             VStack(spacing: 20) {
                 Spacer()
 
@@ -37,12 +36,11 @@ struct LoginView: View {
 
                 Text("SlapApp")
                     .font(.system(size: 48, weight: .bold))
-                    .foregroundColor(.orange)
+                    .foregroundColor(.white)
 
                 Spacer()
             }
 
-            // Bottom section - Form
             VStack(spacing: 20) {
                 Picker("Mode", selection: $isLoginMode) {
                     Text("Login").tag(true)
@@ -87,6 +85,14 @@ struct LoginView: View {
             }
         }
         .padding()
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [Color.orange.opacity(0.6), Color.red.opacity(0.75)]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .ignoresSafeArea()
     }
 
     func handleSubmit() {
