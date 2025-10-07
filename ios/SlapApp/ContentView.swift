@@ -52,15 +52,6 @@ struct LoginView: View {
             .padding(.horizontal, 40)
             .signInWithAppleButtonStyle(.white)
 
-            if let errorMessage = errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.red.opacity(0.8))
-                    .cornerRadius(8)
-                    .padding(.horizontal, 40)
-            }
-
             Spacer()
         }
         .padding()
@@ -72,6 +63,17 @@ struct LoginView: View {
             )
         )
         .ignoresSafeArea()
+        .overlay(alignment: .top) {
+            if let errorMessage = errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.red.opacity(0.8))
+                    .cornerRadius(8)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 60)
+            }
+        }
     }
 
     func handleSignInWithApple(_ result: Result<ASAuthorization, Error>) {
