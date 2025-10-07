@@ -10,6 +10,7 @@ import AuthenticationServices
 
 struct LoginView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn = false
+    @EnvironmentObject var profileManager: ProfileManager
     @State private var errorMessage: String?
 
     var body: some View {
@@ -97,6 +98,9 @@ struct LoginView: View {
                         )
 
                         print("Successfully signed in! User ID: \(session.user.id)")
+
+                        // Fetch user profile
+                        await profileManager.fetchProfile()
 
                         // Update login state on main thread
                         await MainActor.run {

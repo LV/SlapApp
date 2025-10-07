@@ -9,12 +9,15 @@ import SwiftUI
 
 struct ContentView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn = false
+    @StateObject private var profileManager = ProfileManager()
 
     var body: some View {
         if isLoggedIn {
             HomeView()
+                .environmentObject(profileManager)
         } else {
             LoginView()
+                .environmentObject(profileManager)
         }
     }
 }
