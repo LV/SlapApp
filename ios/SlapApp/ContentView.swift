@@ -27,56 +27,64 @@ struct LoginView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn = false
 
     var body: some View {
-        VStack(spacing: 20) {
-            Spacer()
+        VStack(spacing: 0) {
+            // Top section - Icon and Title
+            VStack(spacing: 20) {
+                Spacer()
 
-            Text("👋")
-                .font(.system(size: 100))
+                Text("👋")
+                    .font(.system(size: 100))
 
-            Text("SlapApp")
-                .font(.system(size: 48, weight: .bold))
-                .foregroundColor(.orange)
+                Text("SlapApp")
+                    .font(.system(size: 48, weight: .bold))
+                    .foregroundColor(.orange)
 
-
-            Spacer()
-
-            Picker("Mode", selection: $isLoginMode) {
-                Text("Login").tag(true)
-                Text("Register").tag(false)
+                Spacer()
             }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, 40)
 
-            VStack(spacing: 15) {
-                TextField("Username", text: $username)
-                    .textFieldStyle(.roundedBorder)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-
-                if !isLoginMode {
-                    TextField("Phone Number", text: $phoneNumber)
-                        .textFieldStyle(.roundedBorder)
-                        .keyboardType(.phonePad)
+            // Bottom section - Form
+            VStack(spacing: 20) {
+                Picker("Mode", selection: $isLoginMode) {
+                    Text("Login").tag(true)
+                    Text("Register").tag(false)
                 }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 40)
 
-                SecureField("Password", text: $password)
-                    .textFieldStyle(.roundedBorder)
+                VStack(spacing: 15) {
+                    TextField("Username", text: $username)
+                        .textFieldStyle(.roundedBorder)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+
+                    if isLoginMode {
+                        SecureField("Password", text: $password)
+                            .textFieldStyle(.roundedBorder)
+                    } else {
+                        TextField("Phone Number", text: $phoneNumber)
+                            .textFieldStyle(.roundedBorder)
+                            .keyboardType(.phonePad)
+
+                        SecureField("Password", text: $password)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                }
+                .padding(.horizontal, 40)
+
+                Button(action: handleSubmit) {
+                    Text(isLoginMode ? "Login" : "Register")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+                .padding(.horizontal, 40)
+                .padding(.top, 10)
+
+                Spacer()
             }
-            .padding(.horizontal, 40)
-
-            Button(action: handleSubmit) {
-                Text(isLoginMode ? "Login" : "Register")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(10)
-            }
-            .padding(.horizontal, 40)
-            .padding(.top, 10)
-
-            Spacer()
         }
         .padding()
     }
