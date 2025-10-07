@@ -4,9 +4,7 @@
 
 create table profiles (
   id uuid references auth.users on delete cascade primary key,
-  username text unique,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+  username text unique
 );
 
 -- Enable Row Level Security
