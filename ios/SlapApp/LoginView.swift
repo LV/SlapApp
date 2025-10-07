@@ -117,6 +117,11 @@ struct LoginView: View {
                 }
             }
         case .failure(let error):
+            // Don't show error if user canceled the sign-in
+            if let authError = error as? ASAuthorizationError, authError.code == .canceled {
+                return
+            }
+
             print("Sign in with Apple failed: \(error.localizedDescription)")
             errorMessage = "Sign in failed: \(error.localizedDescription)"
 
