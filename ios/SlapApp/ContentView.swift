@@ -65,17 +65,27 @@ struct LoginView: View {
         .ignoresSafeArea()
         .overlay(alignment: .top) {
             if let errorMessage = errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.red.opacity(0.8))
-                    .cornerRadius(8)
-                    .padding(.horizontal, 40)
-                    .padding(.top, 60)
-                    .transition(.opacity)
+                HStack(spacing: 12) {
+                    Text("⚠️")
+                        .font(.title2)
+
+                    Text(errorMessage)
+                        .font(.subheadline)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.red.opacity(0.9))
+                        .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 60)
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        .animation(.easeInOut, value: errorMessage)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: errorMessage)
     }
 
     func handleSignInWithApple(_ result: Result<ASAuthorization, Error>) {
