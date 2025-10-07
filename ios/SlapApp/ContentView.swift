@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AuthenticationServices
 
 struct ContentView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn = false
@@ -20,69 +21,37 @@ struct ContentView: View {
 }
 
 struct LoginView: View {
-    @State private var isLoginMode = true
-    @State private var username = ""
-    @State private var phoneNumber = ""
-    @State private var password = ""
     @AppStorage("isLoggedIn") private var isLoggedIn = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 20) {
-                Spacer()
+        VStack(spacing: 40) {
+            Spacer()
 
+            VStack(spacing: 20) {
                 Text("👋")
                     .font(.system(size: 100))
 
                 Text("SlapApp")
                     .font(.system(size: 48, weight: .bold))
                     .foregroundColor(.white)
-
-                Spacer()
             }
 
-            VStack(spacing: 20) {
-                Picker("Mode", selection: $isLoginMode) {
-                    Text("Login").tag(true)
-                    Text("Register").tag(false)
+            Spacer()
+
+            SignInWithAppleButton(
+                .signIn,
+                onRequest: { request in
+                    request.requestedScopes = [.fullName, .email]
+                },
+                onCompletion: { result in
+                    handleSignInWithApple(result)
                 }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 40)
+            )
+            .frame(height: 50)
+            .padding(.horizontal, 40)
+            .signInWithAppleButtonStyle(.white)
 
-                VStack(spacing: 15) {
-                    TextField("Username", text: $username)
-                        .textFieldStyle(.roundedBorder)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-
-                    if isLoginMode {
-                        SecureField("Password", text: $password)
-                            .textFieldStyle(.roundedBorder)
-                    } else {
-                        TextField("Phone Number", text: $phoneNumber)
-                            .textFieldStyle(.roundedBorder)
-                            .keyboardType(.phonePad)
-
-                        SecureField("Password", text: $password)
-                            .textFieldStyle(.roundedBorder)
-                    }
-                }
-                .padding(.horizontal, 40)
-
-                Button(action: handleSubmit) {
-                    Text(isLoginMode ? "Login" : "Register")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                }
-                .padding(.horizontal, 40)
-                .padding(.top, 10)
-
-                Spacer()
-            }
+            Spacer()
         }
         .padding()
         .background(
@@ -95,10 +64,25 @@ struct LoginView: View {
         .ignoresSafeArea()
     }
 
-    func handleSubmit() {
-        // Allow login without validation for now
-        // TODO: Replace with Supabase auth
-        isLoggedIn = true
+    func handleSignInWithApple(_ result: Result<ASAuthorization, Error>) {
+        switch result {
+        case .success(let authorization):
+            if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+                let userIdentifier = appleIDCredential.user
+                let fullName = appleIDCredential.fullName
+                let email = appleIDCredential.email
+
+                // TODO: Send to Supabase for authentication
+                print("User ID: \(userIdentifier)")
+                print("Full Name: \(fullName?.givenName ?? "") \(fullName?.familyName ?? "")")
+                print("Email: \(email ?? "N/A")")
+
+                // Just login for now
+                isLoggedIn = true
+            }
+        case .failure(let error):
+            print("Sign in with Apple failed: \(error.localizedDescription)")
+        }
     }
 }
 
