@@ -226,6 +226,38 @@ struct UsernameEditableRow: View {
         }
     }
 
+    private var iconForStatus: String {
+        if showValidationError {
+            return "xmark.circle.fill"
+        }
+        switch availabilityStatus {
+        case .idle:
+            return "circle.fill"
+        case .checking:
+            return "ellipsis.circle.fill"
+        case .available:
+            return "checkmark.circle.fill"
+        case .unavailable:
+            return "xmark.circle.fill"
+        }
+    }
+
+    private var colorForStatus: Color {
+        if showValidationError {
+            return .red
+        }
+        switch availabilityStatus {
+        case .idle:
+            return .clear
+        case .checking:
+            return .gray
+        case .available:
+            return .green
+        case .unavailable:
+            return .red
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -277,26 +309,9 @@ struct UsernameEditableRow: View {
                         }
 
                     // Availability indicator
-                    Group {
-                        switch availabilityStatus {
-                        case .idle:
-                            Image(systemName: "circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.clear)
-                        case .checking:
-                            Image(systemName: "ellipsis.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.gray)
-                        case .available:
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.green)
-                        case .unavailable:
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.red)
-                        }
-                    }
+                    Image(systemName: iconForStatus)
+                        .font(.title2)
+                        .foregroundColor(colorForStatus)
                 } else {
                     Text(value.isEmpty ? placeholder : value)
                         .font(.body)
