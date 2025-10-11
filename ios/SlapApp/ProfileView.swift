@@ -248,7 +248,7 @@ struct UsernameEditableRow: View {
         }
         switch availabilityStatus {
         case .idle:
-            return .clear
+            return .gray.opacity(0.3)
         case .checking:
             return .gray
         case .available:
@@ -284,6 +284,13 @@ struct UsernameEditableRow: View {
                         .onChange(of: editedValue) { newValue in
                             checkTask?.cancel()
 
+                            // Check if empty or same username first
+                            if newValue.isEmpty || newValue == currentUsername {
+                                showValidationError = false
+                                availabilityStatus = .idle
+                                return
+                            }
+
                             if !isValidUsername {
                                 showValidationError = true
                                 availabilityStatus = .idle
@@ -298,13 +305,9 @@ struct UsernameEditableRow: View {
 
                                 guard !Task.isCancelled else { return }
 
-                                if newValue.isEmpty || newValue == currentUsername {
-                                    availabilityStatus = .idle
-                                } else {
-                                    let isAvailable = await profileManager.checkUsernameAvailability(newValue)
-                                    guard !Task.isCancelled else { return }
-                                    availabilityStatus = isAvailable ? .available : .unavailable
-                                }
+                                let isAvailable = await profileManager.checkUsernameAvailability(newValue)
+                                guard !Task.isCancelled else { return }
+                                availabilityStatus = isAvailable ? .available : .unavailable
                             }
                         }
 
