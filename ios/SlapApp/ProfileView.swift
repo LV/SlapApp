@@ -34,16 +34,24 @@ struct ProfileView: View {
                     // Profile Details
                     VStack(spacing: 16) {
                         if let profile = profileManager.profile {
-                            ProfileDetailRow(
+                            IndividualEditableRow(
                                 icon: "person.fill",
                                 label: "Display Name",
-                                value: profile.displayName ?? "Not set"
+                                value: profile.displayName ?? "",
+                                placeholder: "Not set",
+                                onSave: { newValue in
+                                    await updateDisplayName(newValue)
+                                }
                             )
 
-                            ProfileDetailRow(
+                            IndividualEditableRow(
                                 icon: "at",
                                 label: "Username",
-                                value: profile.username ?? "Not set"
+                                value: profile.username ?? "",
+                                placeholder: "Not set",
+                                onSave: { newValue in
+                                    await updateUsername(newValue)
+                                }
                             )
 
                             ProfileDetailRow(
@@ -101,6 +109,83 @@ struct ProfileView: View {
         }
 
         return "?"
+    }
+
+    private func updateDisplayName(_ newValue: String) async {
+        guard var profile = profileManager.profile else { return }
+        profile.displayName = newValue.isEmpty ? nil : newValue
+        profileManager.profile = profile
+        await profileManager.updateProfile()
+    }
+
+    private func updateUsername(_ newValue: String) async {
+        guard var profile = profileManager.profile else { return }
+        profile.username = newValue.isEmpty ? nil : newValue
+        profileManager.profile = profile
+        await profileManager.updateProfile()
+    }
+}
+
+struct IndividualEditableRow: View {
+    let icon: String
+    let label: String
+    let value: String
+    let placeholder: String
+    let onSave: (String) async -> Void
+
+    @State private var isEditing = false
+    @State private var editedValue: String = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.orange)
+                    .frame(width: 24)
+
+                Text(label)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            HStack {
+                if isEditing {
+                    TextField(label, text: $editedValue)
+                        .textFieldStyle(.plain)
+                        .padding()
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.orange, lineWidth: 1)
+                        )
+                } else {
+                    Text(value.isEmpty ? placeholder : value)
+                        .font(.body)
+                        .foregroundColor(value.isEmpty ? .secondary : .primary)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
+                }
+
+                Button(action: {
+                    if isEditing {
+                        Task {
+                            await onSave(editedValue)
+                            isEditing = false
+                        }
+                    } else {
+                        editedValue = value
+                        isEditing = true
+                    }
+                }) {
+                    Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.orange)
+                }
+            }
+        }
     }
 }
 
