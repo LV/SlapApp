@@ -63,9 +63,9 @@ class SoundManager: ObservableObject {
     func playRandomSound() {
         // Independently decide whether to play each type
         // 30% chance for horse (if not already playing)
-        let shouldPlayHorse = Int.random(in: 0...100) < 30
+        let shouldPlayHorse = Int.random(in: 0...100) < 5
         // 70% chance for whip
-        let shouldPlayWhip = Int.random(in: 0...100) < 70
+        let shouldPlayWhip = Int.random(in: 0...100) < 25
 
         if shouldPlayHorse && !isHorsePlaying {
             playRandomHorse()

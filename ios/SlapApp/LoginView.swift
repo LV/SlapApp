@@ -107,8 +107,8 @@ struct LoginView: View {
     }
 
     func startRandomSounds() {
-        // Play a sound at random intervals between 2-6 seconds
-        soundTimer = Timer.scheduledTimer(withTimeInterval: Double.random(in: 2...6), repeats: false) { _ in
+        // Play a sound at random intervals between 0.5-2 seconds
+        soundTimer = Timer.scheduledTimer(withTimeInterval: Double.random(in: 0.5...2), repeats: false) { _ in
             SoundManager.shared.playRandomSound()
             // Schedule the next sound
             startRandomSounds()
