@@ -13,6 +13,8 @@ class SoundManager: ObservableObject {
 
     private var horsePlayers: [AVAudioPlayer] = []
     private var whipPlayers: [AVAudioPlayer] = []
+    private var horseDelegates: [HorsePlayerDelegate] = []
+    private var whipDelegates: [WhipPlayerDelegate] = []
     private var isHorsePlaying = false
 
     private var horseSounds: [(name: String, ext: String)] = []
@@ -59,19 +61,24 @@ class SoundManager: ObservableObject {
     }
 
     func playRandomSound() {
-        // 20% chance for horse, 80% chance for whip
-        let shouldPlayHorse = Int.random(in: 0...100) < 20
+        // Independently decide whether to play each type
+        // 30% chance for horse (if not already playing)
+        let shouldPlayHorse = Int.random(in: 0...100) < 30
+        // 70% chance for whip
+        let shouldPlayWhip = Int.random(in: 0...100) < 70
 
-        if shouldPlayHorse {
+        if shouldPlayHorse && !isHorsePlaying {
             playRandomHorse()
-        } else {
+        }
+
+        if shouldPlayWhip {
             playRandomWhip()
         }
     }
 
     func playRandomHorse() {
         // Only play if no horse is currently playing
-        guard !isHorsePlaying, !horseSounds.isEmpty else { return }
+        guard !horseSounds.isEmpty else { return }
 
         guard let sound = horseSounds.randomElement(),
               let url = Bundle.main.url(forResource: sound.name, withExtension: sound.ext) else {
@@ -81,8 +88,10 @@ class SoundManager: ObservableObject {
 
         do {
             let player = try AVAudioPlayer(contentsOf: url)
-            player.delegate = HorsePlayerDelegate(manager: self)
+            let delegate = HorsePlayerDelegate(manager: self)
+            player.delegate = delegate
             horsePlayers.append(player)
+            horseDelegates.append(delegate)
             isHorsePlaying = true
             player.play()
         } catch {
@@ -101,8 +110,10 @@ class SoundManager: ObservableObject {
 
         do {
             let player = try AVAudioPlayer(contentsOf: url)
-            player.delegate = WhipPlayerDelegate(manager: self)
+            let delegate = WhipPlayerDelegate(manager: self)
+            player.delegate = delegate
             whipPlayers.append(player)
+            whipDelegates.append(delegate)
             player.play()
         } catch {
             print("Failed to play whip sound: \(error)")
@@ -110,12 +121,18 @@ class SoundManager: ObservableObject {
     }
 
     fileprivate func horseDidFinish(_ player: AVAudioPlayer) {
-        horsePlayers.removeAll { $0 == player }
+        if let index = horsePlayers.firstIndex(of: player) {
+            horsePlayers.remove(at: index)
+            horseDelegates.remove(at: index)
+        }
         isHorsePlaying = false
     }
 
     fileprivate func whipDidFinish(_ player: AVAudioPlayer) {
-        whipPlayers.removeAll { $0 == player }
+        if let index = whipPlayers.firstIndex(of: player) {
+            whipPlayers.remove(at: index)
+            whipDelegates.remove(at: index)
+        }
     }
 }
 
