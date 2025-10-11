@@ -81,4 +81,22 @@ class ProfileManager: ObservableObject {
             isLoading = false
         }
     }
+
+    func checkUsernameAvailability(_ username: String) async -> Bool {
+        guard !username.isEmpty else { return false }
+
+        do {
+            let result: [Profile] = try await Config.supabase
+                .from("profiles")
+                .select()
+                .eq("username", value: username)
+                .execute()
+                .value
+
+            return result.isEmpty
+        } catch {
+            print("Error checking username availability: \(error)")
+            return false
+        }
+    }
 }
