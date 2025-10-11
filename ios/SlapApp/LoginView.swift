@@ -31,8 +31,26 @@ struct LoginView: View {
                     }
 
                 Text("SlapApp")
-                    .font(.system(size: 48, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 56, weight: .semibold, design: .default))
+                    .foregroundStyle(.white)
+                    .overlay(
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.clear, .white.opacity(0.3), .clear],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: 100)
+                            .rotationEffect(.degrees(30))
+                            .offset(x: -200)
+                            .mask(
+                                Text("SlapApp")
+                                    .font(.system(size: 56, weight: .semibold, design: .default))
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
             }
 
             Spacer()
