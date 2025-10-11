@@ -204,12 +204,18 @@ struct UsernameEditableRow: View {
     @State private var editedValue: String = ""
     @State private var availabilityStatus: AvailabilityStatus = .idle
     @State private var checkTask: Task<Void, Never>?
+    @State private var showValidationError = false
 
     enum AvailabilityStatus {
         case idle
         case checking
         case available
         case unavailable
+    }
+
+    private var isValidUsername: Bool {
+        let pattern = "^[a-zA-Z0-9_-]*$"
+        return editedValue.range(of: pattern, options: .regularExpression) != nil
     }
 
     var body: some View {
@@ -237,6 +243,14 @@ struct UsernameEditableRow: View {
                         )
                         .onChange(of: editedValue) { newValue in
                             checkTask?.cancel()
+
+                            if !isValidUsername {
+                                showValidationError = true
+                                availabilityStatus = .idle
+                                return
+                            }
+
+                            showValidationError = false
                             availabilityStatus = .checking
 
                             checkTask = Task {
@@ -287,11 +301,12 @@ struct UsernameEditableRow: View {
 
                 Button(action: {
                     if isEditing {
-                        if availabilityStatus == .available || editedValue == currentUsername {
+                        if (availabilityStatus == .available || editedValue == currentUsername) && isValidUsername {
                             Task {
                                 await onSave(editedValue)
                                 isEditing = false
                                 availabilityStatus = .idle
+                                showValidationError = false
                                 checkTask?.cancel()
                             }
                         }
@@ -299,14 +314,22 @@ struct UsernameEditableRow: View {
                         editedValue = value
                         isEditing = true
                         availabilityStatus = .idle
+                        showValidationError = false
                     }
                 }) {
                     Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
                         .font(.title2)
                         .foregroundColor(.orange)
-                        .opacity(isEditing && availabilityStatus != .available && editedValue != currentUsername ? 0.3 : 1.0)
+                        .opacity(isEditing && (availabilityStatus != .available && editedValue != currentUsername || !isValidUsername) ? 0.3 : 1.0)
                 }
-                .disabled(isEditing && availabilityStatus != .available && editedValue != currentUsername)
+                .disabled(isEditing && (availabilityStatus != .available && editedValue != currentUsername || !isValidUsername))
+            }
+
+            if showValidationError {
+                Text("Username can only contain letters, numbers, dashes, and underscores")
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding(.top, 4)
             }
         }
         .onDisappear {
