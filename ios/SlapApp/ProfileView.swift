@@ -215,7 +215,15 @@ struct UsernameEditableRow: View {
 
     private var isValidUsername: Bool {
         let pattern = "^[a-zA-Z0-9_-]*$"
-        return editedValue.range(of: pattern, options: .regularExpression) != nil
+        return editedValue.range(of: pattern, options: .regularExpression) != nil && editedValue.count <= 32
+    }
+
+    private var validationErrorMessage: String {
+        if editedValue.count > 32 {
+            return "Username must be 32 characters or less"
+        } else {
+            return "Username can only contain letters, numbers, dashes, and underscores"
+        }
     }
 
     var body: some View {
@@ -326,7 +334,7 @@ struct UsernameEditableRow: View {
             }
 
             if showValidationError {
-                Text("Username can only contain letters, numbers, dashes, and underscores")
+                Text(validationErrorMessage)
                     .font(.caption)
                     .foregroundColor(.red)
                     .padding(.top, 4)
