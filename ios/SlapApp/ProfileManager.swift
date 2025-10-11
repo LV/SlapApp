@@ -29,21 +29,12 @@ class ProfileManager: ObservableObject {
                 .execute()
                 .value
 
-            print("DEBUG: Fetched username from DB: \(profileData.username ?? "nil")")
-            print("DEBUG: User metadata: \(user.userMetadata)")
-
-            let fullNameValue = user.userMetadata["full_name"]
-            print("DEBUG: Full name value: \(String(describing: fullNameValue))")
-            print("DEBUG: Full name type: \(type(of: fullNameValue))")
-
             let displayName: String?
-            if let fullNameValue = fullNameValue {
+            if let fullNameValue = user.userMetadata["full_name"] {
                 displayName = String(describing: fullNameValue)
             } else {
                 displayName = nil
             }
-
-            print("DEBUG: Extracted displayName: \(displayName ?? "nil")")
 
             self.profile = Profile(
                 id: user.id,
@@ -52,8 +43,6 @@ class ProfileManager: ObservableObject {
                 displayName: displayName,
                 phoneNumber: user.phone?.isEmpty == true ? nil : user.phone
             )
-
-            print("DEBUG: Final profile - username: \(self.profile?.username ?? "nil"), displayName: \(self.profile?.displayName ?? "nil")")
 
             isLoading = false
         } catch {
@@ -70,9 +59,6 @@ class ProfileManager: ObservableObject {
         errorMessage = nil
 
         do {
-            print("DEBUG: Updating username to: \(profile.username ?? "nil")")
-            print("DEBUG: Updating displayName to: \(profile.displayName ?? "nil")")
-
             // Update profiles table (username)
             try await Config.supabase
                 .from("profiles")
@@ -80,15 +66,11 @@ class ProfileManager: ObservableObject {
                 .eq("id", value: profile.id.uuidString)
                 .execute()
 
-            print("DEBUG: Username updated in profiles table")
-
             // Update auth user metadata (display name)
             let attributes = UserAttributes(
                 data: ["full_name": profile.displayName.map { AnyJSON.string($0) } ?? .null]
             )
             try await Config.supabase.auth.update(user: attributes)
-
-            print("DEBUG: Display name updated in auth metadata")
 
             // TODO: Add separate verified flows for email and phone number updates
 
