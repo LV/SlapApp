@@ -14,6 +14,7 @@ struct LoginView: View {
     @State private var errorMessage: String?
     @State private var gradientAngle: Double = 0
     @State private var waveRotation: Double = 0
+    @State private var soundTimer: Timer?
 
     var body: some View {
         VStack(spacing: 40) {
@@ -97,6 +98,26 @@ struct LoginView: View {
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: errorMessage)
+        .onAppear {
+            startRandomSounds()
+        }
+        .onDisappear {
+            stopRandomSounds()
+        }
+    }
+
+    func startRandomSounds() {
+        // Play a sound at random intervals between 2-6 seconds
+        soundTimer = Timer.scheduledTimer(withTimeInterval: Double.random(in: 2...6), repeats: false) { _ in
+            SoundManager.shared.playRandomSound()
+            // Schedule the next sound
+            startRandomSounds()
+        }
+    }
+
+    func stopRandomSounds() {
+        soundTimer?.invalidate()
+        soundTimer = nil
     }
 
     func handleSignInWithApple(_ result: Result<ASAuthorization, Error>) {
