@@ -12,6 +12,7 @@ struct LoginView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn = false
     @EnvironmentObject var profileManager: ProfileManager
     @State private var errorMessage: String?
+    @State private var gradientAngle: Double = 0
 
     var body: some View {
         VStack(spacing: 40) {
@@ -45,11 +46,25 @@ struct LoginView: View {
         }
         .padding()
         .background(
-            LinearGradient(
-                gradient: Gradient(colors: [Color.orange.opacity(0.6), Color.red.opacity(0.75)]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            ZStack {
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.orange.opacity(0.6), Color.red.opacity(0.75)]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.orange.opacity(0.4), Color.red.opacity(0.6)]),
+                    startPoint: .bottomLeading,
+                    endPoint: .topTrailing
+                )
+                .opacity(gradientAngle)
+            }
+            .onAppear {
+                withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+                    gradientAngle = 1
+                }
+            }
         )
         .ignoresSafeArea()
         .overlay(alignment: .top) {
