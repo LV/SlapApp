@@ -34,7 +34,7 @@ struct ProfileView: View {
                     // Profile Details
                     VStack(spacing: 16) {
                         if let profile = profileManager.profile {
-                            IndividualEditableRow(
+                            DisplayNameEditableRow(
                                 icon: "person.fill",
                                 label: "Display Name",
                                 value: profile.displayName ?? "",
@@ -128,7 +128,7 @@ struct ProfileView: View {
     }
 }
 
-struct IndividualEditableRow: View {
+struct DisplayNameEditableRow: View {
     let icon: String
     let label: String
     let value: String
@@ -137,6 +137,21 @@ struct IndividualEditableRow: View {
 
     @State private var isEditing = false
     @State private var editedValue: String = ""
+    @State private var showValidationError = false
+
+    private var isValidDisplayName: Bool {
+        // Block control characters and other harmful characters
+        let invalidPattern = "[\\x00-\\x1F\\x7F<>]"
+        return editedValue.range(of: invalidPattern, options: .regularExpression) == nil && editedValue.count <= 64
+    }
+
+    private var validationErrorMessage: String {
+        if editedValue.count > 64 {
+            return "Display name must be 64 characters or less"
+        } else {
+            return "Display name contains invalid characters"
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -161,6 +176,9 @@ struct IndividualEditableRow: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.orange, lineWidth: 1)
                         )
+                        .onChange(of: editedValue) { _ in
+                            showValidationError = !isValidDisplayName
+                        }
                 } else {
                     Text(value.isEmpty ? placeholder : value)
                         .font(.body)
@@ -173,19 +191,32 @@ struct IndividualEditableRow: View {
 
                 Button(action: {
                     if isEditing {
-                        Task {
-                            await onSave(editedValue)
-                            isEditing = false
+                        if isValidDisplayName {
+                            Task {
+                                await onSave(editedValue)
+                                isEditing = false
+                                showValidationError = false
+                            }
                         }
                     } else {
                         editedValue = value
                         isEditing = true
+                        showValidationError = false
                     }
                 }) {
                     Image(systemName: isEditing ? "checkmark.circle.fill" : "pencil.circle.fill")
                         .font(.title2)
                         .foregroundColor(.orange)
+                        .opacity(isEditing && !isValidDisplayName ? 0.3 : 1.0)
                 }
+                .disabled(isEditing && !isValidDisplayName)
+            }
+
+            if showValidationError {
+                Text(validationErrorMessage)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding(.top, 4)
             }
         }
     }
