@@ -13,6 +13,7 @@ struct LoginView: View {
     @EnvironmentObject var profileManager: ProfileManager
     @State private var errorMessage: String?
     @State private var gradientAngle: Double = 0
+    @State private var waveRotation: Double = 0
 
     var body: some View {
         VStack(spacing: 40) {
@@ -21,6 +22,12 @@ struct LoginView: View {
             VStack(spacing: 20) {
                 Text("👋")
                     .font(.system(size: 100))
+                    .rotationEffect(.degrees(waveRotation))
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                            waveRotation = 15
+                        }
+                    }
 
                 Text("SlapApp")
                     .font(.system(size: 48, weight: .bold))
