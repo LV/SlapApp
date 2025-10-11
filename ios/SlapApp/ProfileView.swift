@@ -258,7 +258,9 @@ struct UsernameEditableRow: View {
                     Group {
                         switch availabilityStatus {
                         case .idle:
-                            EmptyView()
+                            Image(systemName: "circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.clear)
                         case .checking:
                             Image(systemName: "ellipsis.circle.fill")
                                 .font(.title2)
